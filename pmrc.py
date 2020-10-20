@@ -2,63 +2,7 @@
 
 import sys
 import time
-import keyboard
 from bluepy import btle
-from time import sleep
-
-
-class PlaymobilRacerScan(btle.Scanner):
-
-    NAME_PREFIX = 'PM-RC '
-
-    def __init__(self, btdev=0):
-        self.started = False
-        super().__init__(btdev)
-
-    def __del__(self):
-        self.stop()
-
-    def __enter__(self):
-        self.start()
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        self.stop()
-
-    def start(self, passive=False):
-        super().start(passive)
-        self.started = True
-        return self
-
-    def stop(self):
-        if self.started:
-            self.started = False
-            super().stop()
-
-    def process(self, timeout=1):
-        super().process(timeout)
-        cars = []
-        for device in self.getDevices():
-            if not device.connectable:
-                continue
-            name = None
-            for data in device.getScanData():
-                if data[0] == 9:
-                    name = data[2]
-                    break
-            if not name or not name.startswith(self.NAME_PREFIX):
-                continue
-            cars.append(PlaymobilRacer(device.addr, name, device.rssi))
-        return cars
-
-    @staticmethod
-    def multry(times):
-        with PlaymobilRacerScan() as scan:
-            for timeout in times:
-                cars = scan.process(timeout)
-                if cars:
-                    break
-        return cars
 
 
 class PlaymobilRacer:
@@ -73,8 +17,7 @@ class PlaymobilRacer:
         self.handle = None
         self.rotation = 0
         self.direction = 0
-
-        keyboard.hook(self.key_cb)
+        self.last_pressed = None
 
     def __del__(self):
         self.disconnect()
@@ -143,63 +86,37 @@ class PlaymobilRacer:
         self.motor(0)
         self.light(False)
 
-    def key_cb(self, event):
-        # handle acceleration and motor control
-        if keyboard.is_pressed("w"):
-            print("+")
-            self.motor(128)
-        elif keyboard.is_pressed("s"):
-            self.motor(-127)
-        else:
-            self.motor(0)
+    def key(self, pressed):
+        if not bool(pressed) and not bool(self.last_pressed):
+            return
+        self.last_pressed = pressed
+        try:
+            # handle speed setting
+            if "1" in pressed:
+                self.speed(1)
+            if "2" in pressed:
+                self.speed(2)
+            if "3" in pressed:
+                self.speed(3)
+            if "4" in pressed:
+                self.speed(4)
+            if "5" in pressed:
+                self.speed(5)
 
-        # handle steering
-        if keyboard.is_pressed("d"):
-            self.turn(128)
-        elif keyboard.is_pressed("a"):
-            self.turn(-127)
-        else:
-            self.turn(0)
-            self.motor(self.rotation)
+            # handle acceleration and motor control
+            if "w" in pressed:
+                self.motor(128)
+            elif "s" in pressed:
+                self.motor(-127)
+            else:
+                self.motor(0)
 
-
-def demo(mac=None):
-    if mac:
-        car = PlaymobilRacer(mac)
-    else:
-        cars = PlaymobilRacerScan.multry([0.1, 0.3, 1, 3])
-        if not cars:
-            sys.exit("Not found any Playmobil Racer car!")
-        car = max(cars)  # select closest one
-        for found in cars:
-            print("%c %s" % ('*' if found == car else ' ', found))
-    with car:
-        car.light()
-        car.speed()
-        car.motor(128)
-        car.turn(128)
-
-
-
-def live(mac=None):
-    if mac:
-        car = PlaymobilRacer(mac)
-    else:
-        cars = PlaymobilRacerScan.multry([0.1, 0.3, 1, 3])
-        if not cars:
-            sys.exit("Not found any Playmobil Racer car!")
-        car = max(cars)  # select closest one
-        for found in cars:
-            print("%c %s" % ('*' if found == car else ' ', found))
-    with car:
-        car.speed(3)
-        while True:
-            car.key_cb(None)
-            sleep(0.1)
-
-
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        live(sys.argv[1])
-    else:
-        live()
+            # handle steering
+            if "d" in pressed:
+                self.turn(128)
+            elif "a" in pressed:
+                self.turn(-127)
+            else:
+                self.turn(0)
+        except:
+            print("whoopsie")

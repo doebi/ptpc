@@ -1,7 +1,7 @@
 <html>
-<head><title>Django District</title></head>
+<head><title>Playmobil Tele-Presence Car</title></head>
 <body>
-    <h2>use your wasd keys to controle the car</h2>
+    <h2>use your wasd keys to control the car</h2>
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
@@ -13,10 +13,23 @@
             socket.on('msg', function(msg) {
                 $("#connected").html(msg.count);
             });
-          $(document).keydown(function(e){
-            console.log(e);
-            socket.emit('key', {'key': e.key});
+            let pressed = {}
+          $(document).keydown(function(e) {
+            e = e || window.event;
+            pressed[e.key] = true;
+            socket.emit('key', {'pressed': pressed});
           });
+          $(document).keyup(function(e) {
+            e = e || window.event;
+            delete pressed[e.key];
+            socket.emit('key', {'pressed': pressed});
+          });
+
+          heartbeat();
+          function heartbeat() {
+            socket.emit('key', {'pressed': pressed});
+            setTimeout(heartbeat, 100);
+          }
         });
     </script>
 </body>
