@@ -88,9 +88,17 @@ class PlaymobilRacer:
 
     def key(self, pressed):
         if not bool(pressed) and not bool(self.last_pressed):
+            self.last_pressed = pressed
             return
         self.last_pressed = pressed
         try:
+
+            # handle light
+            if "q" in pressed:
+                self.light(True)
+            else:
+                self.light(False)
+
             # handle speed setting
             if "1" in pressed:
                 self.speed(1)
