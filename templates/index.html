@@ -3,12 +3,12 @@
 <body>
     <h2>use your wasd keys to control the car</h2>
 
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
 
     <script type="text/javascript">
         $(document).ready(function() {
-            var url = "http://" + document.domain + ":" + location.port;
+            var url = "//" + document.domain + ":" + location.port;
             var socket = io.connect(url + "/dd");
             socket.on('msg', function(msg) {
                 $("#connected").html(msg.count);
