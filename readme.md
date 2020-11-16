@@ -1,4 +1,4 @@
-# Playmobil Tele-Presence Car (TPTC)
+# Playmobil Tele-Presence Car (PTPC)
 
 In today's world, physical presence is increasingly becoming the exception. There are many free and affordable video conferencing tools to mitiage the need for communication. But unfortunately there are little to no affordable solutions for virtual presence in remote locations, that allow the remotee interaction with the physical world. This project trys to solve this dilemma, by providing an easy to install and setup remote tele-presence solution.
 
